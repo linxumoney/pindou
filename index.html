@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>拼豆图片转换器</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="control-panel">
+        <header class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div>
+            <h1>拼豆图片转换器</h1>
+            <p>上传图片，一键生成可打印拼豆图纸</p>
+          </div>
+        </header>
+
+        <section class="panel">
+          <div class="panel-title">
+            <h2>1. 上传图片</h2>
+            <span id="fileMeta">未上传</span>
+          </div>
+          <label id="dropZone" class="drop-zone">
+            <input id="imageUpload" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/bmp">
+            <span class="upload-icon">+</span>
+            <strong>点击或拖拽上传图片</strong>
+            <small>支持 JPG、PNG、WEBP、GIF、BMP</small>
+          </label>
+          <div id="sourcePreview" class="source-preview empty">
+            <span>原图预览</span>
+          </div>
+          <p id="statusText" class="status-text">请选择一张图片开始转换。</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">
+            <h2>2. 图纸参数</h2>
+            <button id="generateBtn" class="primary-btn" type="button" disabled>生成图纸</button>
+          </div>
+
+          <div class="segmented" role="group" aria-label="尺寸输入方式">
+            <button class="segment active" type="button" data-size-mode="grid">按格数</button>
+            <button class="segment" type="button" data-size-mode="physical">按成品尺寸</button>
+          </div>
+
+          <div id="gridSizeControls" class="control-grid">
+            <label>
+              点阵宽度
+              <input id="gridWidth" type="number" min="8" max="200" value="48">
+            </label>
+            <label>
+              点阵高度
+              <input id="gridHeight" type="number" min="8" max="200" value="48">
+            </label>
+          </div>
+
+          <div id="physicalSizeControls" class="control-grid hidden">
+            <label>
+              成品宽度 cm
+              <input id="finishedWidth" type="number" min="2" max="80" step="0.5" value="24">
+            </label>
+            <label>
+              成品高度 cm
+              <input id="finishedHeight" type="number" min="2" max="80" step="0.5" value="24">
+            </label>
+          </div>
+
+          <div class="control-grid">
+            <label>
+              拼豆尺寸
+              <select id="beadSize">
+                <option value="5">5mm 拼豆</option>
+                <option value="2">2mm 拼豆</option>
+              </select>
+            </label>
+            <label>
+              色彩数量
+              <input id="maxColors" type="number" min="2" max="48" value="24">
+            </label>
+          </div>
+
+          <label class="check-row">
+            <input id="lockRatio" type="checkbox" checked>
+            锁定原图比例
+          </label>
+
+          <label>
+            图片适配
+            <select id="fitMode">
+              <option value="cover">裁切填满，主体更大</option>
+              <option value="contain">完整保留，边缘留白</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="panel">
+          <h2>3. 颜色与图纸</h2>
+          <div class="control-grid">
+            <label>
+              色彩模式
+              <select id="colorMode">
+                <option value="palette">匹配拼豆色板</option>
+                <option value="image">原图近似色</option>
+              </select>
+            </label>
+            <label>
+              背景
+              <select id="backgroundMode">
+                <option value="transparent">透明留空</option>
+                <option value="white">白色背景</option>
+                <option value="custom">自定义背景</option>
+              </select>
+            </label>
+          </div>
+
+          <label id="customBackgroundWrap" class="custom-color hidden">
+            自定义背景色
+            <input id="customBackground" type="color" value="#ffffff">
+          </label>
+
+          <div class="toggle-grid">
+            <label class="check-row">
+              <input id="showGrid" type="checkbox" checked>
+              显示网格
+            </label>
+            <label class="check-row">
+              <input id="showCodes" type="checkbox">
+              显示编号
+            </label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">
+            <h2>4. 导出</h2>
+            <button id="downloadBtn" class="primary-btn" type="button" disabled>下载 PNG</button>
+          </div>
+          <label>
+            预览缩放
+            <input id="zoomSlider" type="range" min="40" max="180" value="100">
+          </label>
+          <label class="check-row">
+            <input id="exportCodes" type="checkbox" checked>
+            导出时包含颜色编号
+          </label>
+          <p class="status-text">导出的 PNG 会包含清晰网格，适合保存或打印。</p>
+        </section>
+
+        <section class="panel help-panel">
+          <h2>使用说明</h2>
+          <ol>
+            <li>上传图片后，先用默认参数生成图纸。</li>
+            <li>调节点阵尺寸和色彩数量，直到轮廓与颜色都适合制作。</li>
+            <li>查看用色清单准备拼豆，最后下载 PNG 图纸。</li>
+          </ol>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <header class="workspace-head">
+          <div>
+            <p class="eyebrow">Bead Pattern Preview</p>
+            <h2 id="patternTitle">等待生成拼豆图纸</h2>
+          </div>
+          <div class="stats">
+            <span><strong id="beadCount">0</strong> 颗</span>
+            <span><strong id="colorCount">0</strong> 色</span>
+            <span><strong id="finishedSize">--</strong></span>
+          </div>
+        </header>
+
+        <div id="canvasViewport" class="canvas-viewport">
+          <canvas id="patternCanvas" width="1200" height="1200" aria-label="拼豆图纸预览"></canvas>
+          <div id="emptyState" class="empty-state">
+            <strong>上传图片后生成拼豆图纸</strong>
+            <span>支持网格、编号、颜色统计和高清 PNG 导出</span>
+          </div>
+        </div>
+
+        <section class="color-panel">
+          <div class="panel-title">
+            <h2>用色清单</h2>
+            <span id="paletteNote">暂无用色</span>
+          </div>
+          <div id="colorBreakdown" class="color-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
